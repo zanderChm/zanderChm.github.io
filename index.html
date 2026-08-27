@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Tío de la Mina — Proyecto Taller de Proyectos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #14100d;
+    --bg-2: #1c1611;
+    --surface: #221b15;
+    --surface-2: #2a2119;
+    --line: #3a2f24;
+    --text: #ece4d6;
+    --text-dim: #a89a86;
+    --silver: #b9c4c8;
+    --silver-dim: #7e8b8f;
+    --amber: #d98f3f;
+    --amber-dim: #8a5a26;
+    --danger: #b5482f;
+    --display: 'Cinzel', serif;
+    --body: 'Work Sans', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    line-height:1.6;
+    min-height:100vh;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -5%, rgba(217,143,63,0.08), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 100%, rgba(185,196,200,0.05), transparent 60%);
+    pointer-events:none;
+    z-index:0;
+  }
+
+  /* ---------- Layout shell ---------- */
+  .shell{
+    display:grid;
+    grid-template-columns: 300px 1fr;
+    min-height:100vh;
+    position:relative;
+    z-index:1;
+  }
+
+  /* ---------- Sidebar / "depth shaft" nav ---------- */
+  .sidebar{
+    background: linear-gradient(180deg, var(--bg-2), var(--bg));
+    border-right:1px solid var(--line);
+    padding:2.2rem 1.4rem 2rem;
+    position:sticky; top:0; height:100vh;
+    overflow-y:auto;
+  }
+  .brand{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:1.15rem;
+    letter-spacing:0.08em;
+    color:var(--amber);
+    text-transform:uppercase;
+    margin-bottom:0.15rem;
+  }
+  .brand-sub{
+    font-family:var(--mono);
+    font-size:0.68rem;
+    color:var(--text-dim);
+    letter-spacing:0.05em;
+    margin-bottom:2rem;
+    display:block;
+  }
+
+  .shaft{
+    position:relative;
+    padding-left:1.6rem;
+  }
+  .shaft::before{
+    content:"";
+    position:absolute;
+    left:6px; top:6px; bottom:6px;
+    width:1px;
+    background: linear-gradient(180deg, var(--amber-dim), var(--silver-dim));
+  }
+  .tab-btn{
+    all:unset;
+    display:flex;
+    align-items:baseline;
+    gap:0.6rem;
+    width:100%;
+    padding:0.62rem 0.5rem;
+    cursor:pointer;
+    border-radius:4px;
+    position:relative;
+    color:var(--text-dim);
+    font-size:0.86rem;
+    transition:color .15s ease, background .15s ease;
+  }
+  .tab-btn::before{
+    content:"";
+    position:absolute;
+    left:-1.6rem;
+    top:50%; transform:translate(-3px,-50%);
+    width:9px; height:9px;
+    border-radius:50%;
+    background: var(--bg);
+    border:1.5px solid var(--silver-dim);
+    transition: all .2s ease;
+  }
+  .tab-btn:hover{ color:var(--text); background:rgba(255,255,255,0.02); }
+  .tab-btn .lvl{
+    font-family:var(--mono);
+    font-size:0.68rem;
+    color:var(--amber-dim);
+    min-width:1.6em;
+  }
+  .tab-btn.active{
+    color:var(--text);
+    background: rgba(217,143,63,0.07);
+  }
+  .tab-btn.active .lvl{ color:var(--amber); }
+  .tab-btn.active::before{
+    background: var(--amber);
+    border-color: var(--amber);
+    box-shadow: 0 0 8px 1px rgba(217,143,63,0.6);
+  }
+
+  .sidebar-foot{
+    margin-top:2.5rem;
+    padding-top:1.2rem;
+    border-top:1px solid var(--line);
+    font-family:var(--mono);
+    font-size:0.68rem;
+    color:var(--text-dim);
+    line-height:1.8;
+  }
+  .sidebar-foot b{ color:var(--silver); }
+
+  /* ---------- Main content ---------- */
+  main{
+    padding: 3.4rem 4rem 6rem;
+    max-width:920px;
+    position:relative; z-index:1;
+  }
+  .panel{ display:none; animation: rise .35s ease; }
+  .panel.active{ display:block; }
+  @keyframes rise{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:0.72rem;
+    letter-spacing:0.14em;
+    color:var(--amber);
+    text-transform:uppercase;
+    margin-bottom:0.9rem;
+  }
+  h1{
+    font-family:var(--display);
+    font-weight:900;
+    font-size:clamp(2.1rem, 4vw, 3.1rem);
+    letter-spacing:0.02em;
+    line-height:1.08;
+    margin-bottom:1rem;
+    color:var(--text);
+  }
+  h1 .accent{ color:var(--amber); }
+  h2{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:1.5rem;
+    letter-spacing:0.01em;
+    margin:2.4rem 0 1rem;
+    color:var(--silver);
+  }
+  h2:first-of-type{ margin-top:0; }
+  h3{
+    font-family:var(--body);
+    font-weight:600;
+    font-size:1.02rem;
+    color:var(--amber);
+    margin:1.6rem 0 0.5rem;
+  }
+  p{ color:var(--text-dim); margin-bottom:1rem; max-width:65ch;}
+  p strong{ color:var(--text); font-weight:600;}
+  .lede{ font-size:1.08rem; color:var(--text); max-width:60ch; }
+
+  /* hero */
+  .hero-meta{
+    display:flex; flex-wrap:wrap; gap:0.5rem 1.6rem;
+    margin:1.6rem 0 2.2rem;
+    font-family:var(--mono); font-size:0.78rem; color:var(--text-dim);
+  }
+  .hero-meta span b{ color:var(--silver); font-weight:500; }
+  .divider{
+    height:1px;
+    background: linear-gradient(90deg, var(--amber-dim), transparent);
+    margin: 2.2rem 0;
+  }
+
+  /* cards / grids */
+  .grid{ display:grid; gap:1rem; margin:1.2rem 0 2rem; }
+  .grid-2{ grid-template-columns:1fr 1fr; }
+  .grid-3{ grid-template-columns:repeat(3,1fr); }
+  @media(max-width:720px){ .grid-2, .grid-3{ grid-template-columns:1fr; } }
+
+  .card{
+    background: var(--surface);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:1.2rem 1.3rem;
+  }
+  .card h4{
+    font-family:var(--mono);
+    font-size:0.72rem;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--amber);
+    margin-bottom:0.5rem;
+  }
+  .card p{ margin-bottom:0; font-size:0.92rem; }
+
+  table{ width:100%; border-collapse:collapse; margin:1rem 0 2rem; font-size:0.88rem; }
+  th{
+    text-align:left;
+    font-family:var(--mono);
+    font-size:0.68rem;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--amber);
+    border-bottom:1px solid var(--line);
+    padding:0.6rem 0.7rem;
+  }
+  td{
+    border-bottom:1px solid var(--line);
+    padding:0.7rem;
+    color:var(--text-dim);
+    vertical-align:top;
+  }
+  tr:last-child td{ border-bottom:none; }
+  td.who{ color:var(--silver); font-weight:600; white-space:nowrap; }
+
+  /* camino del heroe */
+  .heroe-list{ list-style:none; margin:1rem 0 2rem; }
+  .heroe-list li{
+    display:grid;
+    grid-template-columns: 2.4rem 1fr;
+    gap:1rem;
+    padding:0.75rem 0;
+    border-bottom:1px solid var(--line);
+  }
+  .heroe-list li:last-child{ border-bottom:none; }
+  .heroe-num{
+    font-family:var(--mono);
+    color:var(--amber);
+    font-size:0.85rem;
+  }
+  .heroe-list b{ color:var(--text); display:block; margin-bottom:0.15rem; font-size:0.94rem;}
+  .heroe-list span{ color:var(--text-dim); font-size:0.88rem; }
+
+  /* storyboard */
+  .scene{
+    border-left:2px solid var(--line);
+    padding:0.2rem 0 1.4rem 1.2rem;
+    margin-left:0.2rem;
+    position:relative;
+  }
+  .scene::before{
+    content:"";
+    position:absolute; left:-6px; top:0.3rem;
+    width:10px; height:10px; border-radius:50%;
+    background:var(--bg); border:2px solid var(--silver-dim);
+  }
+  .scene h4{
+    font-family:var(--mono); color:var(--silver); font-size:0.82rem;
+    margin-bottom:0.35rem; letter-spacing:0.03em;
+  }
+  .scene p{ font-size:0.88rem; margin-bottom:0.3rem; }
+  .scene .dir{ color:var(--text-dim); font-style:italic; }
+  .scene .voice{ color:var(--amber-dim); font-weight:600; }
+
+  /* video */
+  .video-wrap{
+    background:#000;
+    border:1px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+    aspect-ratio:16/9;
+    display:flex; align-items:center; justify-content:center;
+    margin:1.4rem 0 2rem;
+  }
+  video{ width:100%; height:100%; display:block; }
+  .video-placeholder{
+    color:var(--text-dim); font-family:var(--mono); font-size:0.8rem; text-align:center; padding:2rem;
+  }
+
+  /* IA evidence */
+  .ia-step{
+    display:grid; grid-template-columns:auto 1fr; gap:1rem;
+    padding:1rem 0; border-bottom:1px solid var(--line);
+  }
+  .ia-step:last-child{ border-bottom:none; }
+  .ia-step .tag{
+    font-family:var(--mono); font-size:0.68rem; text-transform:uppercase;
+    letter-spacing:0.05em; color:var(--amber); white-space:nowrap; padding-top:0.15rem;
+  }
+  .ia-step p{ margin-bottom:0.3rem; font-size:0.9rem; }
+  .prompt-box{
+    background:var(--bg-2); border:1px solid var(--line); border-radius:5px;
+    padding:0.7rem 0.9rem; font-family:var(--mono); font-size:0.78rem;
+    color:var(--silver); margin:0.4rem 0;
+  }
+
+  /* credits */
+  .credit-row{
+    display:flex; justify-content:space-between; padding:0.75rem 0;
+    border-bottom:1px solid var(--line); font-size:0.92rem;
+  }
+  .credit-row:last-child{ border-bottom:none; }
+  .credit-row span:first-child{ color:var(--text-dim); }
+  .credit-row span:last-child{ color:var(--text); font-weight:500; }
+
+  .fill-me{
+    color:var(--danger); font-family:var(--mono); font-size:0.72rem;
+    border:1px dashed var(--danger); padding:0.1rem 0.4rem; border-radius:3px;
+  }
+
+  ::selection{ background:var(--amber); color:var(--bg); }
+
+  @media (max-width:860px){
+    .shell{ grid-template-columns:1fr; }
+    .sidebar{ position:relative; height:auto; border-right:none; border-bottom:1px solid var(--line); }
+    main{ padding:2.2rem 1.4rem 4rem; }
+  }
+
+  .video-wrap iframe{ width:100%; height:100%; border:0; display:block; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="brand">El Tío de la Mina</div>
+    <span class="brand-sub">TALLER DE PROYECTOS · DESAFÍO 01</span>
+
+    <nav class="shaft" id="nav">
+      <button class="tab-btn active" data-tab="inicio"><span class="lvl">00</span> Inicio</button>
+      <button class="tab-btn" data-tab="relato"><span class="lvl">01</span> El relato</button>
+      <button class="tab-btn" data-tab="adaptacion"><span class="lvl">02</span> Adaptación</button>
+      <button class="tab-btn" data-tab="heroe"><span class="lvl">03</span> Camino del Héroe</button>
+      <button class="tab-btn" data-tab="storyboard"><span class="lvl">04</span> Storyboard</button>
+      <button class="tab-btn" data-tab="video"><span class="lvl">05</span> Video final</button>
+      <button class="tab-btn" data-tab="ia"><span class="lvl">06</span> Uso de IA</button>
+      <button class="tab-btn" data-tab="mencion"><span class="lvl">07</span> Mención IS</button>
+      <button class="tab-btn" data-tab="conclusiones"><span class="lvl">08</span> Conclusiones</button>
+      <button class="tab-btn" data-tab="creditos"><span class="lvl">09</span> Créditos</button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div><b>Estudiante:</b> Quelali Apaza Alexander Yeferson</div>
+      <div><b>Mención:</b> Ingeniería de Sistemas</div>
+      <div><b>Carrera:</b> Informática</div>
+    </div>
+  </aside>
+
+  <main>
+
+    <!-- 00 INICIO -->
+    <section class="panel active" id="inicio">
+      <div class="eyebrow">Taller de Proyectos — Desafío 01</div>
+      <h1>El <span class="accent">Tío</span> de la Mina</h1>
+      <p class="lede">Del relato oral del Cerro Rico de Potosí a un sistema de protección minera en tiempo real — un proyecto que conecta tradición andina e Ingeniería de Sistemas.</p>
+      <div class="hero-meta">
+        <span><b>Estudiante</b> — Quelali Apaza Alexander Yeferson</span>
+        <span><b>Mención</b> — Ingeniería de Sistemas</span>
+        <span><b>Duración del video</b> — ~3:15 min</span>
+      </div>
+      <div class="divider"></div>
+      <div class="grid grid-3">
+        <div class="card">
+          <h4>Relato</h4>
+          <p>El Tío de la Mina — tradición oral y cultura minera de Potosí, Bolivia.</p>
+        </div>
+        <div class="card">
+          <h4>Pregunta central</h4>
+          <p>¿Cómo funciona el sistema completo del relato y qué actores, procesos e información intervienen?</p>
+        </div>
+        <div class="card">
+          <h4>Reinterpretación</h4>
+          <p>Sistema de monitoreo y seguridad minera en tiempo real: sensores, alertas y protocolos de protección.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 01 RELATO -->
+    <section class="panel" id="relato">
+      <div class="eyebrow">Nivel 01</div>
+      <h2>El relato original</h2>
+      <p class="lede">En el Cerro Rico de Potosí, los mineros veneran a El Tío: amo y señor de las profundidades. No es el diablo católico ni tampoco un dios benigno — es una figura ambigua que puede proteger a quien lo respeta... o castigar a quien lo desprecia.</p>
+      <p>Antes de bajar a los socavones, los mineros realizan la <strong>ch'alla</strong>: una ofrenda de coca, alcohol y cigarros que se hace frente a las estatuas de El Tío repartidas por la mina. Es un ritual de reciprocidad — se le da, para recibir protección a cambio.</p>
+      <p>Nuestro relato sigue a un <strong>joven minero</strong> en su primer descenso al socavón, guiado por un <strong>minero veterano</strong> que le enseña a respetar al que manda en la oscuridad. Cuando la montaña se derrumba, es El Tío quien decide su destino.</p>
+      <div class="card" style="margin-top:1.5rem;">
+        <h4>Fuente</h4>
+        <p>Tradición oral y cultura minera del Cerro Rico, Potosí, Bolivia. Material recopilado como parte del corpus de leyendas de la Carrera de Literatura.</p>
+      </div>
+    </section>
+
+    <!-- 02 ADAPTACION -->
+    <section class="panel" id="adaptacion">
+      <div class="eyebrow">Nivel 02</div>
+      <h2>De la leyenda al sistema</h2>
+      <p class="lede">El relato original no explica solo una creencia — describe, sin saberlo, un sistema completo de gestión de riesgo: una entrada (la ofrenda), un proceso (la evaluación de El Tío) y una salida (protección o desgracia).</p>
+      <p>Esa misma estructura es la que existe hoy en cualquier mina real, solo que resuelta con tecnología en vez de ritual: sensores que "reciben" información constantemente, un sistema que la analiza, y una alerta que decide cuándo actuar.</p>
+      <div class="grid grid-2" style="margin-top:1.4rem;">
+        <div class="card">
+          <h4>Entonces</h4>
+          <p>El minero ofrece coca, alcohol y cigarro. El Tío observa desde la oscuridad y decide: protección o castigo.</p>
+        </div>
+        <div class="card">
+          <h4>Hoy</h4>
+          <p>Sensores de gas, temperatura y vibración envían datos constantes. Un sistema central los analiza y decide: alerta o vía libre.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 CAMINO DEL HEROE -->
+    <section class="panel" id="heroe">
+      <div class="eyebrow">Nivel 03</div>
+      <h2>Camino del Héroe</h2>
+      <p class="lede">Las 10 etapas aplicadas al joven minero protagonista de la historia.</p>
+      <ol class="heroe-list">
+        <li><span class="heroe-num">01</span><div><b>Mundo ordinario</b><span>Un joven minero se prepara para su primer descenso al Cerro Rico.</span></div></li>
+        <li><span class="heroe-num">02</span><div><b>Llamado</b><span>La necesidad de trabajar lo obliga a bajar a las profundidades por primera vez.</span></div></li>
+        <li><span class="heroe-num">03</span><div><b>Duda</b><span>El nerviosismo y el desconocimiento de las reglas de la mina lo hacen dudar.</span></div></li>
+        <li><span class="heroe-num">04</span><div><b>Mentor o ayuda</b><span>El minero veterano le enseña el protocolo de respeto: la ch'alla frente a El Tío.</span></div></li>
+        <li><span class="heroe-num">05</span><div><b>Cruce del umbral</b><span>Realiza la ofrenda y cruza la boca de la mina hacia la oscuridad.</span></div></li>
+        <li><span class="heroe-num">06</span><div><b>Pruebas</b><span>Avanza por galerías cada vez más estrechas y pesadas, en busca de la veta.</span></div></li>
+        <li><span class="heroe-num">07</span><div><b>Gran desafío</b><span>Un derrumbe lo atrapa; queda solo, en peligro real, en la oscuridad.</span></div></li>
+        <li><span class="heroe-num">08</span><div><b>Recompensa</b><span>El Tío se revela y reconoce su respeto — le abre un camino de salida.</span></div></li>
+        <li><span class="heroe-num">09</span><div><b>Regreso</b><span>El joven emerge a la superficie, agotado pero vivo.</span></div></li>
+        <li><span class="heroe-num">10</span><div><b>Transformación</b><span>Comprende que la protección exige respeto y ofrenda constante — un ciclo que ya nunca rompe.</span></div></li>
+      </ol>
+    </section>
+
+    <!-- 04 STORYBOARD -->
+    <section class="panel" id="storyboard">
+      <div class="eyebrow">Nivel 04</div>
+      <h2>Storyboard — 19 escenas</h2>
+      <p class="lede">Guion completo con dirección visual, continuidad entre escenas y perfiles de voz por personaje.</p>
+
+      <h3>Parte A — El relato original (≈2:20)</h3>
+
+      <div class="scene">
+        <h4>Escena 01 — Apertura: Potosí y el Cerro Rico</h4>
+        <p class="dir">Plano general del Cerro Rico al amanecer, niebla disipándose. Paneo lento descendente. Título "EL TÍO DE LA MINA" en fade-in, centrado, 3-4 seg.</p>
+        <p><span class="voice">Narrador:</span> "En lo alto de los Andes bolivianos se alza el Cerro Rico de Potosí. Durante siglos, sus entrañas han dado plata al mundo... y han exigido, a cambio, un precio."</p>
+      </div>
+      <div class="scene">
+        <h4>Escena 02 — La vida en la mina</h4>
+        <p class="dir">Continuación del paneo, nivel de calle, mineros preparándose. Termina siguiendo al grupo hacia la entrada.</p>
+        <p><span class="voice">Narrador:</span> "Cada mañana, cientos de mineros descienden a la oscuridad. Conocen el peligro: derrumbes, gas, galerías que pueden cerrarse en un instante."</p>
+      </div>
+      <div class="scene">
+        <h4>Escena 03 — Presentación del protagonista</h4>
+        <p class="dir">La cámara aísla al joven minero, plano medio, nervioso, ajustándose el casco.</p>
+        <p><span class="voice">Narrador:</span> "Entre ellos, un joven minero se prepara para bajar por primera vez a las profundidades."</p>
+      </div>
+      <div class="scene">
+        <h4>Escena 04 — El mentor</h4>
+        <p class="dir">El veterano entra en cuadro, mano en el hombro del joven.</p>
+        <p><span class="voice">Minero veterano:</span> "Aquí abajo no estás solo, muchacho. Antes de bajar, hay que respetar al que manda en la oscuridad."</p>
+      </div>
+      <div class="scene">
+        <h4>Escena 05 — Presentación de la creencia</h4>
+        <p class="dir">Zoom-in lento hacia la estatua de El Tío rodeada de ofrendas.</p>
+        <p><span class="voice">Narrador:</span> "Los mineros lo llaman El Tío. Amo y señor de las profundidades. Dicen que puede proteger... o puede castigar."</p>
+      </div>
+      <div class="scene">
+        <h4>Escena 06 — El ritual de la ch'alla</h4>
+        <p class="dir">Ofrenda de coca, alcohol y cigarro frente a la estatua. Plano cercano a las manos.</p>
+        <p><span class="voice">Minero veterano:</span> "Dale de beber, dale de fumar. Pídele permiso. Y no te lleves nada de aquí sin agradecer."</p>
+        <p><span class="voice">Narrador:</span> "Así comienza la ch'alla: la ofrenda que abre camino hacia las vetas... y hacia la protección."</p>
+      </div>
+      <div class="scene">
+        <h4>Escena 07 — El descenso</h4>
+        <p class="dir">Cambio de escenario: exterior → interior. Fundido a negro que se abre con la luz de la lámpara.</p>
+        <p><span class="voice">Narrador:</span> "Con la ofrenda hecha, el joven minero cruza el umbral de la mina."</p>
+      </div>
+      <div class="scene">
+        <h4>Escena 09 — El peligro</h4>
+        <p class="dir">Temblor, rocas caen, derrumbe. Polvo cubre el encuadre.</p>
+        <p><span class="voice">Narrador:</span> "Entonces, la montaña recuerda su peligro."</p>
+      </div>
+      <div class="scene">
+        <h4>Escena 10 — El momento crítico</h4>
+        <p class="dir">El joven queda atrapado, oscuridad casi total, solo su lámpara.</p>
+        <p><span class="voice">Narrador:</span> "En ese instante, el joven recordó las palabras del veterano: que aquí abajo, nunca se está solo."</p>
+      </div>
+      <div class="scene">
+        <h4>Escena 11 — La aparición de El Tío</h4>
+        <p class="dir">La luz revela poco a poco la figura de El Tío. Plano-contraplano.</p>
+        <p><span class="voice">El Tío:</span> "Has entrado en mis dominios sin miedo... y me has dado lo que se me debe. Coca, alcohol, humo. Por eso, hoy, no vengo a cobrarme nada."</p>
+      </div>
+      <div class="scene">
+        <h4>Escena 12 — El diálogo con El Tío</h4>
+        <p class="dir">Su mano señala la oscuridad, donde aparece una grieta de luz.</p>
+        <p><span class="voice">Joven minero:</span> "Solo quiero salir con vida... y volver a ver el cielo."</p>
+        <p><span class="voice">El Tío:</span> "Eso ya lo decidiste tú, muchacho, la noche que me ofrendaste sin que nadie te obligara. Yo solo... recuerdo a los que me respetan."</p>
+      </div>
+      <div class="scene">
+        <h4>Escena 13 — El regreso</h4>
+        <p class="dir">Cambio de escenario: interior → exterior. La grieta se abre hasta la luz del día.</p>
+        <p><span class="voice">Narrador:</span> "Cuando volvió a ver el cielo, comprendió que no había sido solo suerte... ni solo esfuerzo. Había sido respeto."</p>
+      </div>
+      <div class="scene">
+        <h4>Escena 14 — Cierre reflexivo</h4>
+        <p class="dir">El joven deja una nueva ofrenda. La cámara se aleja hasta el plano general con el que abrió la Escena 1.</p>
+        <p><span class="voice">Narrador:</span> "Desde entonces, cada mañana, hace su ofrenda sin falta. Porque en el Cerro Rico, todos saben: El Tío no es bueno ni malo. Es, simplemente, el que decide."</p>
+      </div>
+
+      <h3>Parte B — Reinterpretación actual (≈0:40)</h3>
+
+      <div class="scene">
+        <h4>Escena 15 — Transición</h4>
+        <p class="dir">Fundido a negro → texto: "Hoy, la protección de los mineros toma otra forma".</p>
+        <p><span class="voice">Narrador:</span> "La leyenda de El Tío nació de una necesidad muy real: sobrevivir a los peligros de la mina. Hoy, esa misma necesidad se resuelve con tecnología."</p>
+      </div>
+      <div class="scene">
+        <h4>Escena 16 — Sensores y proceso en tiempo real</h4>
+        <p class="dir">Mockup de sensores en la mina; zoom hacia un dashboard de control.</p>
+        <p><span class="voice">Narrador:</span> "En lugar de coca y alcohol, hoy se ofrecen sensores: de gas, de temperatura, de vibración. Cada dato es analizado en tiempo real por un sistema central."</p>
+      </div>
+      <div class="scene">
+        <h4>Escena 17 — La alerta</h4>
+        <p class="dir">Alerta roja se activa en el dashboard; mapa marca la zona de riesgo.</p>
+        <p><span class="voice">Narrador:</span> "Cuando el sistema detecta que algo no está bien, no espera a que ocurra la desgracia: envía una alerta inmediata."</p>
+      </div>
+      <div class="scene">
+        <h4>Escena 18 — Protocolo de seguridad</h4>
+        <p class="dir">Equipo de seguridad recibe la alerta; evacuación. Split screen final: El Tío / dashboard.</p>
+        <p><span class="voice">Narrador:</span> "El Tío vigilaba desde la oscuridad, decidiendo entre proteger o castigar. Hoy, ese mismo cuidado lo ofrece un sistema que no depende de la suerte... sino de los datos."</p>
+      </div>
+
+      <h3>Parte C — Créditos (≈0:15)</h3>
+      <div class="scene">
+        <h4>Escena 19 — Cierre</h4>
+        <p class="dir">El split screen se desvanece hacia el Cerro Rico al atardecer. Créditos superpuestos.</p>
+      </div>
+    </section>
+
+    <!-- 05 VIDEO -->
+<section class="panel" id="video">
+  <div class="eyebrow">Nivel 05</div>
+  <h2>Video final</h2>
+  <p class="lede">Video narrativo completo — Partes A, B y C integradas (~3:8 min).</p>
+  
+  <!-- OPCIÓN 1: Reproductor de archivo local (Mantenido como estaba) -->
+  <div class="video-wrap">
+    <video controls poster="">
+      <source src="video.mp4" type="video/mp4">
+      
+    </video>
+  </div>
+
+  <!-- OPCIÓN 3: Enlace visible para hacer clic e ir a YouTube -->
+  <p style="font-size: 0.9rem; margin-top: 10px;">
+    Si no puedes reproducir el video, míralo directamente en este 
+    <a href="https://youtu.be/ndLbE_pnFyo" target="_blank" style="color: #0066cc; text-decoration: underline; font-weight: bold;">
+      enlace directo de YouTube
+    </a>.
+  </p>
+</section>
+
+    <!-- 06 IA -->
+    <section class="panel" id="ia">
+      <div class="eyebrow">Nivel 06</div>
+      <h2>Uso de Inteligencia Artificial</h2>
+      <p class="lede">Herramientas utilizadas: <strong>Gemini AI</strong> y <strong>Claude AI</strong>. El guion, la continuidad de escenas y el storyboard se desarrollaron con Claude AI; la generación visual de cada escena se hizo con Gemini AI, usando un chat nuevo por escena con un texto de contexto fijo para mantener consistencia de estilo y personajes.</p>
+
+      <div class="ia-step">
+        <span class="tag">Contexto fijo</span>
+        <div>
+          <p>Antes de cada escena, se pegaba este bloque de contexto en un chat nuevo para mantener coherencia visual entre generaciones independientes:</p>
+          <div class="prompt-box">PROYECTO: Guion "El Tío de la Mina" (continuidad de escenas)
+CONTEXTO CULTURAL: documental animado sobre la cultura, mitología y tradiciones mineras de Bolivia. No mezclar elementos de otros países ni cultura pop. Estética respetuosa, mística y tradicional andina.
+ESTILO VISUAL FIJO: animación 3D estilizada, personajes semi-animados (no hiperrealistas ni caricaturescos), iluminación suave de cine, paleta de colores tierra y ocre.</div>
+        </div>
+      </div>
+
+      <div class="ia-step">
+        <span class="tag">Prompt — Escena 1</span>
+        <div>
+          <p>Instrucción visual + audio enviada a Gemini AI para la escena de apertura:</p>
+          <div class="prompt-box">Plano general del Cerro Rico de Potosí al amanecer, niebla disipándose. Paneo lento hacia abajo. A los 2 segundos, texto flotante en fade-in: "EL TÍO DE LA MINA", tipografía tallada en piedra, dorado óxido, 4 segundos, desvanece mientras continúa el paneo.
+<br> Audio: viento andino suave, ecos lejanos de herramientas mineras. 
+<br> <br> Narrador: "En lo alto de los Andes bolivianos se alza el Cerro Rico de Potosí.  Durante siglos, sus entrañas han dado plata al mundo... y han exigido, a cambio, un precio."</div>
+        </div>
+      </div>
+      <div class="ia-step">
+        <span class="tag">Resultado inicial</span>
+        <div><p>En el primer intento no le pedí a la IA que incluyera el título — solo generé el paisaje del Cerro Rico, y salió bastante bien: el paneo descendente y la niebla se veían tal como los pedí. Después, en un segundo intento, sí incluí el título dentro del prompt 
+                para que apareciera directamente en el video. Ahí surgió el problema: el texto "EL TÍO DE LA MINA" aparecía solo por un instante y se ocultaba casi de inmediato, apenas un segundo en pantalla, sin dar tiempo a leerlo.</p></div>
+      </div>
+      <div class="ia-step">
+        <span class="tag">Error / limitación</span>
+        <div><p>El texto del título generado directamente por la IA salía con letras deformadas e ilegibles — limitación común de los modelos de generación de video con texto incrustado.</p></div>
+      </div>
+      <div class="ia-step">
+        <span class="tag">Corrección</span>
+        <div><p>Ajusté el prompt para ser más específico con los tiempos: especifiqué que el título debía aparecer a los 2 segundos y permanecer en pantalla 4 segundos, con un fade-in y fade-out más suaves, además de precisar mejor la tipografía (tallada en piedra, dorado óxido). Volví a generar la escena completa con ese prompt corregido.</p></div>
+      </div>
+      <div class="ia-step">
+        <span class="tag">Resultado mejorado</span>
+        <div><p>Con el prompt ajustado, el título ahora aparece de forma clara y permanece el tiempo suficiente para leerse completo, con una transición mucho más natural que en el primer intento. El resultado final se ve más limpio y profesional, todo logrado ajustando el prompt, sin necesidad de editar nada por fuera.</p></div>
+      </div>
+
+      <div class="ia-step">
+        <span class="tag">Ajuste de guion</span>
+        <div><p>Durante el proceso de generación se eliminó la Escena 8 (interior de la mina, avance del grupo) por considerarse relleno con la Escena 7 y la Escena 9 — ejemplo de cómo el uso de IA llevó a una revisión y mejora del guion original, no solo de las imágenes.</p></div>
+      </div>
+</section>
+
+    <!-- 07 MENCION -->
+    <section class="panel" id="mencion">
+      <div class="eyebrow">Nivel 07</div>
+      <h2>Mención — Ingeniería de Sistemas</h2>
+      <p class="lede">¿Cómo funciona el problema completo y qué actores, procesos, información y recursos intervienen?</p>
+
+      <h3>Actores y función</h3>
+      <table>
+        <tr><th>Actor</th><th>Función</th></tr>
+        <tr><td class="who">Joven minero</td><td>Usuario/operador del sistema. Ingresa al entorno de riesgo, sigue el protocolo y enfrenta el peligro.</td></tr>
+        <tr><td class="who">Minero veterano</td><td>Transmisor del protocolo de seguridad y respeto antes del ingreso.</td></tr>
+        <tr><td class="who">El Tío</td><td>Regulador del sistema: evalúa el cumplimiento del protocolo y decide el resultado.</td></tr>
+        <tr><td class="who">Otros mineros</td><td>Comunidad que opera bajo el mismo sistema de creencias/protocolo.</td></tr>
+        <tr><td class="who">La mina</td><td>Entorno físico que contiene los riesgos que el sistema debe gestionar.</td></tr>
+      </table>
+
+      <h3>Entrada → Proceso → Salida</h3>
+      <div class="grid grid-3">
+        <div class="card"><h4>Entrada</h4><p>Ofrenda del minero (ch'alla) y decisión de ingresar a la mina.</p></div>
+        <div class="card"><h4>Proceso</h4><p>El Tío evalúa el cumplimiento del protocolo; la mina genera un evento de riesgo.</p></div>
+        <div class="card"><h4>Salida</h4><p>El minero sale con vida; se refuerza el protocolo para el siguiente ciclo.</p></div>
+      </div>
+
+      <h3>Diagrama del proceso</h3>
+      <div class="prompt-box" style="white-space:pre-line; line-height:1.9;">Minero se prepara → Recibe protocolo del mentor → Realiza la ofrenda (ch'alla)
+→ Ingresa a la mina → Ocurre el riesgo (derrumbe)
+→ El Tío evalúa el cumplimiento → Decide el resultado
+→ Minero sale con vida → Refuerza el protocolo → Ciclo se repite</div>
+
+      <h3>Problema identificado</h3>
+      <p>El sistema tradicional depende de un protocolo simbólico y no verificable en tiempo real frente a riesgos físicos reales y medibles. La alerta solo llega cuando el peligro ya se manifestó.</p>
+
+      <h3>Propuesta de mejora</h3>
+      <p>Un sistema de monitoreo y seguridad minera en tiempo real: sensores de gas, temperatura y vibración (entrada) → análisis central continuo (proceso) → alerta automática al equipo de seguridad antes del derrumbe (salida). Convierte una protección reactiva y simbólica en una protección preventiva y basada en datos.</p>
+    </section>
+
+    <!-- 08 CONCLUSIONES -->
+    <section class="panel" id="conclusiones">
+      <div class="eyebrow">Nivel 08</div>
+      <h2>Conclusiones</h2>
+      
+      <p style="font-size: 14px; line-height: 1.6; text-align: justify;">Al analizar la relación entre la mitología andina y los fundamentos de la Ingeniería de Sistemas, se evidencia que la estructura de la leyenda de El Tío describe un sistema dinámico completo compuesto por entradas (la ofrenda), 
+        un proceso central (la determinación de la entidad) y salidas (protección o contingencia). Aunque en la actualidad este problema de seguridad se resuelve mediante redes de sensores de telemetría y alertas automatizadas en tiempo real en lugar de un ritual analógico, 
+        la lógica subyacente permanece invariable. Ambos modelos, el tradicional y el tecnológico, comparten el mismo objetivo de mitigación predictiva del riesgo, lo que permite valorar la sabiduría práctica presente en tradiciones como la ch'alla, cuya efectividad empírica se valida hoy a través de la implementación técnica y el análisis de datos.</p>
+        <p style="font-size: 14px; line-height: 1.6; text-align: justify;">Finalmente, el proceso de producción multimedia demostró que el trabajo con herramientas de Inteligencia Artificial exige un enfoque iterativo y riguroso. La necesidad de revisar el material, detectar anomalías como la deformación de textos y corregir las instrucciones en múltiples ocasiones confirmó 
+        que la automatización requiere de una supervisión analítica constante. Este ciclo de retroalimentación y optimización continua refleja de manera exacta la metodología aplicada en la Ingeniería de Sistemas, donde la identificación de fallas y el ajuste del proceso determinan el éxito del resultado final.</p>
+</section>
+
+    <!-- 09 CREDITOS -->
+    <section class="panel" id="creditos">
+      <div class="eyebrow">Nivel 09</div>
+      <h2>Créditos</h2>
+      <div class="credit-row"><span>Relato</span><span>"El Tío de la Mina" — tradición oral, Potosí, Bolivia</span></div>
+      <div class="credit-row"><span>Estudiante</span><span>Quelali Apaza Alexander Yeferson</span></div>
+      <div class="credit-row"><span>Mención</span><span>Ingeniería de Sistemas</span></div>
+      <div class="credit-row"><span>Herramientas de IA</span><span>Gemini AI, Claude AI</span></div>
+      <div class="credit-row"><span>Curso</span><span>Taller de Proyectos — Carrera de Informática</span></div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  const buttons = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.panel');
+  buttons.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      buttons.forEach(b=>b.classList.remove('active'));
+      panels.forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+  });
+</script>
+</body>
+</html>
